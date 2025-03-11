@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/Chris-Greaves/gital/core"
 )
@@ -31,6 +34,40 @@ func main() {
 		slog.Warn("No directories to scan, stopping!")
 		return
 	}
+
+	// Create a context that can be canceled
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // Ensure cancel is called at the end to clean up
+
+	// Channel to listen for when shutting down
+	done := make(chan bool)
+
+	// Channel to listen for system signals (e.g., Ctrl+C)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Run Scheduler
+	scheduler := CreateScheduler(config, ctx)
+	go func() {
+		scheduler.Run(done)
+		done <- true
+	}()
+
+	// Wait for an interrupt signal to initiate graceful shutdown
+	<-sigChan
+
+	// Handle shutdown signal (Ctrl+C or SIGTERM)
+	slog.Info("Received shutdown signal, attempting to shut down gracefully.")
+
+	// Cancel the context to notify all goroutines to stop
+	cancel()
+
+	// Wait for Scheduler to finish what it's doing
+	<-done
+
+	// Final cleanup before exiting
+	slog.Info("Application shutdown complete.")
+
 }
 
 func SetLogLevel(config *core.Config, logLevel *slog.LevelVar) {

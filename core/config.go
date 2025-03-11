@@ -2,6 +2,7 @@ package core
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -10,6 +11,10 @@ import (
 type Config struct {
 	v *viper.Viper
 }
+
+var (
+	KeyScanDelay = "scan_delay"
+)
 
 func LoadConfig() (*Config, error) {
 	viper.SetConfigName("config") // name of config file (without extension)
@@ -20,6 +25,8 @@ func LoadConfig() (*Config, error) {
 	viper.AddConfigPath("$HOME\\.gital") // Windows home directoy
 	viper.AddConfigPath("/etc/gital")    // Alternate Linux config location
 	viper.AddConfigPath(".")             // Local config, useful for testing
+
+	viper.SetDefault(KeyScanDelay, time.Second*30)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
@@ -33,7 +40,8 @@ func LoadConfig() (*Config, error) {
 	return &Config{viper.GetViper()}, nil
 }
 
-func (c *Config) IsSet(key string) bool              { return c.v.IsSet(key) }
-func (c *Config) GetString(key string) string        { return c.v.GetString(key) }
-func (c *Config) GetStringSlice(key string) []string { return c.v.GetStringSlice(key) }
-func (c *Config) GetInt(key string) int              { return c.v.GetInt(key) }
+func (c *Config) IsSet(key string) bool                { return c.v.IsSet(key) }
+func (c *Config) GetString(key string) string          { return c.v.GetString(key) }
+func (c *Config) GetStringSlice(key string) []string   { return c.v.GetStringSlice(key) }
+func (c *Config) GetInt(key string) int                { return c.v.GetInt(key) }
+func (c *Config) GetDuration(key string) time.Duration { return c.v.GetDuration(key) }
