@@ -18,6 +18,8 @@ type Scheduler struct {
 	ctx    context.Context
 }
 
+type Job func(ctx context.Context, directories []string) error
+
 func CreateScheduler(config *core.Config, ctx context.Context) Scheduler {
 	return Scheduler{
 		config: config,
@@ -25,7 +27,7 @@ func CreateScheduler(config *core.Config, ctx context.Context) Scheduler {
 	}
 }
 
-func (s *Scheduler) Run(done chan bool) error {
+func (s *Scheduler) Run(job Job, done chan bool) error {
 	wait := s.config.GetDuration(core.KeyScanDelay)
 	if wait == time.Millisecond*0 {
 		return ErrScanDelayUnparseable
@@ -40,8 +42,20 @@ func (s *Scheduler) Run(done chan bool) error {
 			slog.Info("Scheduler stopping.", slog.Any("error", s.ctx.Err()))
 			return nil
 		default:
-			// Do Work
-			time.Sleep(wait)
+			err := job(s.ctx, s.config.GetStringSlice("directories"))
+			if err != nil {
+				slog.Error("Error occured while running scheduled job", slog.Any("error", err))
+			}
+			sleepWithContext(s.ctx, wait)
 		}
+	}
+}
+
+func sleepWithContext(ctx context.Context, dur time.Duration) {
+	select {
+	case <-time.After(dur):
+		return
+	case <-ctx.Done():
+		return
 	}
 }

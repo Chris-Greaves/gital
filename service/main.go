@@ -49,7 +49,7 @@ func main() {
 	// Run Scheduler
 	scheduler := CreateScheduler(config, ctx)
 	go func() {
-		scheduler.Run(done)
+		scheduler.Run(ScanDirectories, done)
 		done <- true
 	}()
 
