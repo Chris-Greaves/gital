@@ -30,7 +30,7 @@ func LoadConfig() (*Config, error) {
 	viper.AddConfigPath(".")             // Local config, useful for testing
 
 	viper.SetDefault(KeyScanDelay, time.Second*30)
-	viper.SetDefault(KeyDatabasePath, userHomeDir()+string(os.PathSeparator)+"/.gital")
+	viper.SetDefault(KeyDatabasePath, userHomeDir()+string(os.PathSeparator)+".gital")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err

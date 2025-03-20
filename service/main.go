@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/Chris-Greaves/gital/core"
+	"github.com/Chris-Greaves/gital/core/db"
 )
 
 func main() {
@@ -45,6 +46,12 @@ func main() {
 	// Channel to listen for system signals (e.g., Ctrl+C)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	_, err = db.CreateAndOpenTheDatabase(config)
+	if err != nil {
+		slog.Error("Error while setting up database.", slog.String("database_path", config.GetString(core.KeyDatabasePath)), slog.Any("error", err))
+		return
+	}
 
 	// Run Scheduler
 	scheduler := CreateScheduler(config, ctx)
