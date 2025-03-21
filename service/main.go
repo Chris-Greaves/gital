@@ -47,16 +47,18 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	_, err = db.CreateAndOpenTheDatabase(config)
+	// Create and open database
+	database, err := db.CreateAndOpenTheDatabase(config)
 	if err != nil {
 		slog.Error("Error while setting up database.", slog.String("database_path", config.GetString(core.KeyDatabasePath)), slog.Any("error", err))
 		return
 	}
+	defer database.Close()
 
 	// Run Scheduler
 	scheduler := CreateScheduler(config, ctx)
 	go func() {
-		scheduler.Run(ScanDirectories, done)
+		scheduler.Run(ScanDirectories, database, done)
 		done <- true
 	}()
 

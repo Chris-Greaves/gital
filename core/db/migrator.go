@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"embed"
+	"log/slog"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -30,6 +31,9 @@ func applyMigrations(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+
+	// Set logger
+	m.Log = NewMigrateLogger(slog.Default().WithGroup("migrator"), false)
 
 	// Run the Migrate Instance and apply all the migrations
 	err = m.Up()

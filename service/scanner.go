@@ -7,13 +7,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Chris-Greaves/gital/core/db"
 	"github.com/go-git/go-git/v5"
 )
 
-func ScanDirectories(ctx context.Context, directories []string) error {
+func ScanDirectories(ctx context.Context, database db.Database, directories []string) error {
 	for _, directory := range directories {
 		slog.Info("Beginning scan of directory", slog.String("directory", directory))
-		err := walkDirectory(ctx, directory)
+		err := walkDirectory(ctx, database, directory)
 		if err != nil {
 			slog.Error("Error while scanning a directory from the config", slog.String("directory", directory), slog.Any("error", err))
 		}
@@ -23,7 +24,7 @@ func ScanDirectories(ctx context.Context, directories []string) error {
 	return nil
 }
 
-func walkDirectory(ctx context.Context, directory string) error {
+func walkDirectory(ctx context.Context, database db.Database, directory string) error {
 	return filepath.WalkDir(directory, func(path string, info os.DirEntry, err error) error {
 		if err != nil {
 			slog.Error("Error accessing path", slog.String("path", path), slog.Any("error", err))
@@ -43,14 +44,24 @@ func walkDirectory(ctx context.Context, directory string) error {
 
 		// Check if the current path is a directory named ".git"
 		if info.IsDir() && info.Name() == ".git" {
-			slog.Info("Git repository found", slog.String("path", filepath.Dir(path)))
+			rootPath := filepath.Dir(path)
+			repoName := filepath.Base(rootPath)
 
 			// Gather information and store on a DB
-			err = gatherGitInfo(path)
+			branch, err := gatherGitInfo(path)
 			if err != nil {
 				// Log error but continue
-				slog.Error("Error while gathering Git Repo Info", slog.String("path", filepath.Dir(path)), slog.Any("error", err))
+				slog.Error("Error while gathering Git Repo Info", slog.String("path", rootPath), slog.Any("error", err))
 			}
+
+			//Write to database
+			err = database.UpsertRepo(ctx, repoName, rootPath, branch)
+			if err != nil {
+				// Log error but continue
+				slog.Error("Error while saving Repository to the database", slog.String("path", rootPath), slog.Any("error", err))
+			}
+
+			slog.Info("Added or Updated Repository", slog.String("name", repoName), slog.String("path", rootPath), slog.String("branch", branch))
 
 			return filepath.SkipDir // No need to walk through the .git folder
 		}
@@ -58,29 +69,17 @@ func walkDirectory(ctx context.Context, directory string) error {
 	})
 }
 
-func gatherGitInfo(path string) error {
+func gatherGitInfo(path string) (branch string, err error) {
 	r, err := git.PlainOpen(path)
 	if err != nil {
-		return err
-	}
-
-	remotes, err := r.Remotes()
-	if err != nil {
-		return err
-	}
-
-	// List of remotes and their URLs
-	for _, rem := range remotes {
-		slog.Info("Found Remote on Repository", slog.String("path", filepath.Dir(path)), slog.String("remote_url", rem.Config().URLs[0]), slog.String("remote_url", rem.Config().Name))
+		return "", err
 	}
 
 	// Get the HEAD reference (active branch)
 	headRef, err := r.Head()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	// Get the current branch name
-	slog.Info("Current branch on Repository", slog.String("path", filepath.Dir(path)), slog.String("branch", headRef.Name().Short()))
-	return nil
+	return headRef.Name().Short(), nil
 }
