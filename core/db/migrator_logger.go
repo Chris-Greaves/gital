@@ -18,7 +18,7 @@ func NewMigrateLogger(logger *slog.Logger, verbose bool) MigrateLogger {
 }
 
 func (ml MigrateLogger) Printf(format string, v ...interface{}) {
-	ml.l.Info(fmt.Sprintf(format, v))
+	ml.l.Info(fmt.Sprintf(format, v...))
 }
 
 func (ml MigrateLogger) Verbose() bool {
