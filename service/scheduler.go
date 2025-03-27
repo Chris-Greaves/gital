@@ -43,7 +43,7 @@ func (s *Scheduler) Run(job Job, db db.Database, done chan bool) error {
 			slog.Info("Scheduler stopping.", slog.Any("error", s.ctx.Err()))
 			return nil
 		default:
-			err := job(s.ctx, db, s.config.GetStringSlice("directories"))
+			err := job(s.ctx, db, s.config.GetStringSlice(core.KeyDirectories))
 			if err != nil {
 				slog.Error("Error occured while running scheduled job", slog.Any("error", err))
 			}

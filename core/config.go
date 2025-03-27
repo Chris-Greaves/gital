@@ -15,6 +15,7 @@ type Config struct {
 }
 
 var (
+	KeyDirectories  = "directories"
 	KeyScanDelay    = "scan_delay"
 	KeyDatabasePath = "database_location"
 )
