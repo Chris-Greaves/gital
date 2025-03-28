@@ -47,7 +47,7 @@ func (s *Scheduler) Run(job Job, db db.Database, done chan bool) error {
 			if err != nil {
 				slog.Error("Error occured while running scheduled job", slog.Any("error", err))
 			}
-			sleepWithContext(s.ctx, wait)
+			sleepWithContext(s.ctx, s.config.GetDuration(core.KeyScanDelay))
 		}
 	}
 }
