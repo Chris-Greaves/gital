@@ -25,3 +25,10 @@ Three components will be used to achieve the functionality I want, first is a ba
   - [ ] Linux
   - [ ] IOS
 
+## Configuration
+
+| Config Name | Type | Default | Description |
+| --- | --- | --- | -------- |
+| `directories` | []string | N/A | a list of paths to be walked looking for git repos. |
+| `scan_delay` | time.Duration | `30s` | the time to wait between scans, e.g. 30s, 15m. |
+| `database_location` | string | `~/.gital` | path where the database is to be stored. |
