@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "fat-client",
+  "outputfilename": "gital",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Christopher Greaves",
+    "email": "28542943+Chris-Greaves@users.noreply.github.com"
+  }
+}
