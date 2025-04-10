@@ -1,6 +1,6 @@
 <script>
-    import AdjustableSliders from "./icons/AdjustableSliders.svelte";
-    import AngleRight from "./icons/AngleRight.svelte";
+    import SidebarRepo from "./components/SidebarRepo.svelte";
+    import SidebarSettingGroup from "./components/SidebarSettingGroup.svelte";
 </script>
 
 <aside
@@ -11,17 +11,7 @@
     <div class="">
         <h2 class="border-b-2 border-b-cyan-900 my-1">Settings</h2>
         <ul class="space-y-2">
-            <li>
-                <a
-                    href="/"
-                    class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                    <AdjustableSliders
-                        style="text-gray-800 dark:text-gray-400"
-                    />
-                    <span class="ms-3">General</span>
-                </a>
-            </li>
+            <SidebarSettingGroup name="General" />
         </ul>
     </div>
     <div class="overflow-y-auto bg-gray-50 rounded-sm dark:bg-gray-800">
@@ -51,15 +41,7 @@
                 >
             </li> -->
 
-            <li>
-                <a
-                    href="/"
-                    class="flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                    <AngleRight style="text-gray-800 dark:text-gray-400" />
-                    <span class="ms-3 mono-font text-xs">/path/to/repo</span>
-                </a>
-            </li>
+            <SidebarRepo pathName="/path/to/repo" />
         </ul>
     </div>
 </aside>
